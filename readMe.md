@@ -5,7 +5,7 @@ This Android application demonstrates interaction with a content provider to gen
 
 ## Features Implemented
 
-✅ **IAV-1**: User can set the length of the string via a text input field  
+✅**IAV-1**: User can set the length of the string via a text input field  
 ✅ **IAV-2**: Clicking the "Generate" button queries the content provider  
 ✅ **IAV-3**: Shows generated string with length and creation date/time  
 ✅ **IAV-4**: Old strings remain visible in a scrollable list  
@@ -17,4 +17,6 @@ This Android application demonstrates interaction with a content provider to gen
   - Network/timeout issues  
   - Database operations  
 
-![Alt Text](screenshots/filename.png)
+  [Google_drive_Apk_link](https://drive.google.com/file/d/1ZN2CcaV_k_VctqO-ZwCWwY68V0uEOuOm/view?usp=sharing)
+
+![App Screenshot](https://github.com/aman1sr/string-generator-app/blob/main/app/screenshots/screenshot.jpeg?raw=true)
