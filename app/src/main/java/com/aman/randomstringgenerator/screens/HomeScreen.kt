@@ -2,11 +2,13 @@ package com.aman.randomstringgenerator.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -25,30 +27,55 @@ fun HomeScreen(
     val stringState by viewModel.allStrings.collectAsState()
     val generateState by viewModel.generateState.collectAsState()
 
-
     if (generateState is UIState.Loading) {
         ShowLoading()
-    }else if (generateState is UIState.Failure) {
+    } else if (generateState is UIState.Failure) {
         ShowError(modifier, "Failed to fetch string: ${(generateState as UIState.Failure).throwable.message}")
     }
 
     var inputLength by remember { mutableStateOf("") }
+    var showError by remember { mutableStateOf(false) }
 
     Box(modifier = modifier) {
         Column(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                OutlinedTextField(
-                    value = inputLength,
-                    onValueChange = { inputLength = it },
-                    label = { Text("Length") },
-                    modifier = Modifier.weight(1f)
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    OutlinedTextField(
+                        value = inputLength,
+                        onValueChange = { newValue ->
+                            if (newValue.isEmpty() || newValue.all { it.isDigit() }) {
+                                inputLength = newValue
+                                showError = false
+                            } else {
+                                showError = true
+                            }
+                        },
+                        label = { Text("Length") },
+                        isError = showError,
+                        supportingText = {
+                            if (showError) {
+                                Text(
+                                    text = "Please enter only digits",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+                }
                 Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = {
-                    inputLength.toIntOrNull()?.let {
-                        viewModel.fetchRandomString(it)
+                Button(
+                    onClick = {
+                        if (inputLength.isNotEmpty() && !showError) {
+                            inputLength.toIntOrNull()?.let {
+                                viewModel.fetchRandomString(it)
+                            }
+                        } else {
+                            showError = true
+                        }
                     }
-                }) {
+                ) {
                     Text("Generate")
                 }
             }
@@ -80,18 +107,17 @@ fun HomeScreen(
             }
         }
 
-                Button(
-                    onClick = { viewModel.deleteAll() },
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text("Delete All")
-                }
-
+        Button(
+            onClick = { viewModel.deleteAll() },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text("Delete All")
         }
     }
+}
 
 
 
