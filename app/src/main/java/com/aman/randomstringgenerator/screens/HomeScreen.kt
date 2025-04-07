@@ -27,14 +27,25 @@ fun HomeScreen(
     val stringState by viewModel.allStrings.collectAsState()
     val generateState by viewModel.generateState.collectAsState()
 
+    var showError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+
     if (generateState is UIState.Loading) {
         ShowLoading()
     } else if (generateState is UIState.Failure) {
-        ShowError(modifier, "Failed to fetch string: ${(generateState as UIState.Failure).throwable.message}")
+        errorMessage = "Failed to fetch string: ${(generateState as UIState.Failure).throwable.message}"
+        showError = true
     }
 
     var inputLength by remember { mutableStateOf("") }
-    var showError by remember { mutableStateOf(false) }
+    var showInputError by remember { mutableStateOf(false) }
+
+    if (showError) {
+        ShowError(
+            text = errorMessage,
+            onDismiss = { showError = false }
+        )
+    }
 
     Box(modifier = modifier) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -45,15 +56,15 @@ fun HomeScreen(
                         onValueChange = { newValue ->
                             if (newValue.isEmpty() || newValue.all { it.isDigit() }) {
                                 inputLength = newValue
-                                showError = false
+                                showInputError = false
                             } else {
-                                showError = true
+                                showInputError = true
                             }
                         },
                         label = { Text("Length") },
-                        isError = showError,
+                        isError = showInputError,
                         supportingText = {
-                            if (showError) {
+                            if (showInputError) {
                                 Text(
                                     text = "Please enter only digits",
                                     color = MaterialTheme.colorScheme.error
@@ -67,12 +78,12 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = {
-                        if (inputLength.isNotEmpty() && !showError) {
+                        if (inputLength.isNotEmpty() && !showInputError) {
                             inputLength.toIntOrNull()?.let {
                                 viewModel.fetchRandomString(it)
                             }
                         } else {
-                            showError = true
+                            showInputError = true
                         }
                     }
                 ) {
@@ -87,7 +98,10 @@ fun HomeScreen(
                     ShowLoading()
                 }
                 is UIState.Failure -> {
-                    ShowError(modifier, "Something went wrong")
+                    ShowError(
+                        text = errorMessage,
+                        onDismiss = { showError = false }
+                    )
                 }
                 is UIState.Success -> {
                     val strings = (stringState as UIState.Success<List<RandomStringEntity>>).data
